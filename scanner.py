@@ -38,11 +38,11 @@
 LOGIN = 'admin'
 PWD = '12345'
 SCRIPTRESULT = 'result.txt'
-LOGSFOLDER = '/tmp/ipcam/'
+#LOGSFOLDER = '/tmp/ipcam/'
 LOGGINGLEVEL = 40  # 'CRITICAL' : 50, 'ERROR' : 40, 'WARNING' : 30, 'INFO' : 20, 'DEBUG' : 10
 ARCHIVEPATH = '/tmp/ipcam/archive//'
 ARCHIVEFOLDERNAME = 'archive'
-FILENAME = 'sitedata.xml'
+#FILENAME = 'sitedata.xml'
 MASSCANFOLDER = '/home/neocaine/'
 MASSCANRESULT = 'scan.xml'
 MASSCANEXCLUDE = 'exclude'
@@ -51,7 +51,7 @@ MASSCANCAMPORTCONF = 'port = 8000'
 MASSCANOUTPUTFORMATCONF = 'output-format = xml'
 MASSCANRESULTCONF = 'output-filename = ' + MASSCANFOLDER+MASSCANRESULT
 MASSCANEXCLUDECONF = 'excludefile = ' + MASSCANFOLDER+MASSCANEXCLUDE
-MASSCANRANGECONF = '''http-user-agent = tasix-scan
+MASSCANRANGECONF = '''http-user-agent = neocaine@amneziainc.ru
 range = 31.135.208.0/21
 range = 37.110.208.0/21
 range = 46.8.35.0/24
@@ -174,10 +174,10 @@ def zipdir(path, zip):
 def delete_previous_file():
     logging.debug('_Function Called deletePreviousFile')
     try:
-        os.remove(LOGSFOLDER + FILENAME)
+        os.remove(MASSCANFOLDER + MASSCANRESULT)
         os.remove(MASSCANFOLDER + SCRIPTRESULT)
     except:
-        logging.warn("Cant Delete Folder Tree at %s" % LOGSFOLDER + FILENAME)
+        logging.warn("Cant Delete Folder Tree at %s" % MASSCANFOLDER)
 
 
 
@@ -243,7 +243,7 @@ def test_default_log_pass(ip):
         logging.warning("Unknown Exception while requests.post")
         return 0
 
-    fname = LOGSFOLDER + FILENAME
+    fname = MASSCANFOLDER + MASSCANRESULT
 
     if os.path.exists(fname):
         os.remove(fname)
@@ -269,12 +269,15 @@ def test_default_log_pass(ip):
         if int(obj['userCheck']['statusValue']) == 200:
             print ip + ' Has Default Log Password'
             os.system('/bin/echo ' + ip + ' Has Default Log Password'+ '>>' + MASSCANFOLDER+SCRIPTRESULT)
+            os.system('/bin/echo ' + ip + '>>' + MASSCANFOLDER + MASSCANEXCLUDE)
     except:
         logging.debug("xml unknown format = %s",ip)
 
 def masscan_return_parser():
     fname = MASSCANFOLDER + MASSCANRESULT
     if not os.path.exists(fname):
+        print(fname)
+        print("WTF")
         exit()
     with open(fname) as masscanResult:
         objects = xmltodict.parse(masscanResult.read())
@@ -287,9 +290,9 @@ logger = setup_custom_logger('root')
 datenow = datetime.now()
 unixtime = str(time.time() + timedelta(days=3).total_seconds())
 
-make_conf_for_masscan()
-#start_masscan()
 delete_previous_file()
+make_conf_for_masscan()
+start_masscan()
 masscan_return_parser()
 
 #
